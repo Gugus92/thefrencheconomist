@@ -35,6 +35,7 @@ body {
 .titles {
     display: flex;
     flex-direction: column; /* Aligne les titres verticalement */
+    align-items: flex-start; 
 }
 
 /* Styles pour les titres */
