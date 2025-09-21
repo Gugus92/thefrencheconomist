@@ -21,9 +21,9 @@ body {
 
 /* Conteneur pour le logo et le titre */
 .header {
-    display: flex;
-    align-items: center; /* Aligne verticalement le logo et le titre */
-    margin-bottom: 10px; /* Espace en bas du conteneur */
+    display: flex; /* Utilise flexbox pour aligner le logo et les titres */
+    align-items: center; /* Aligne verticalement le logo et les titres */
+    margin-bottom: 20px; /* Espace en bas du conteneur */
 }
 
 /* Logo */
@@ -31,17 +31,21 @@ body {
     margin-right: 20px; /* Espace entre le logo et le titre */
 }
 
-/* Titre */
+/* Conteneur pour les titres */
+.titles {
+    display: flex;
+    flex-direction: column; /* Aligne les titres verticalement */
+}
+
+/* Styles pour les titres */
 h1 {
-    font-size: 2.5em;
+    font-size: 2.5em; /* Taille pour les écrans normaux */
     margin: 0; /* Supprime la marge par défaut */
 }
 
-
 h2 {
-    font-size: 1.2em;
-    text-align: center;
-    margin-bottom: 5px;
+    font-size: 1.8em; /* Taille pour les écrans normaux */
+    margin: 0; /* Supprime la marge par défaut */
 }
 
 /* Baseline */
@@ -86,7 +90,11 @@ ul li a:hover {
 /* Styles pour les écrans mobiles */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2em;
+        font-size: 2em; /* Ajustement pour les écrans mobiles */
+    }
+
+    h2 {
+        font-size: 1.5em; /* Ajustement pour les écrans mobiles */
     }
 
     .baseline {
