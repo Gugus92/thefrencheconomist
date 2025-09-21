@@ -1,0 +1,93 @@
+/* Réinitialisation de quelques styles de base */
+body, h1, p, ul {
+    margin: 0;
+    padding: 0;
+}
+
+/* Styles généraux */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Logo */
+.logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Titre */
+h1 {
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5em;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+/* Baseline */
+.baseline {
+    font-size: 1.2em;
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Liste des articles */
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Liens des articles */
+ul li {
+    background: #fff;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s;
+}
+
+ul li:hover {
+    background: #e9e9e9;
+}
+
+/* Styles des liens */
+ul li a {
+    text-decoration: none;
+    color: #007BFF;
+    font-weight: bold;
+}
+
+ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Styles pour les écrans mobiles */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2em;
+    }
+
+    .baseline {
+        font-size: 1em;
+    }
+
+    ul li {
+        padding: 10px;
+    }
+}
