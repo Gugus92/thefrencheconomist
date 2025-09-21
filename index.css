@@ -19,21 +19,27 @@ body {
     padding: 20px;
 }
 
+/* Conteneur pour le logo et le titre */
+.header {
+    display: flex;
+    align-items: center; /* Aligne verticalement le logo et le titre */
+    margin-bottom: 10px; /* Espace en bas du conteneur */
+}
+
 /* Logo */
 .logo {
-    text-align: center;
-    margin-bottom: 20px;
+    margin-right: 20px; /* Espace entre le logo et le titre */
 }
 
 /* Titre */
 h1 {
     font-size: 2.5em;
-    text-align: center;
-    margin-bottom: 10px;
+    margin: 0; /* Supprime la marge par défaut */
 }
 
+
 h2 {
-    font-size: 1.5em;
+    font-size: 1.2em;
     text-align: center;
     margin-bottom: 5px;
 }
