@@ -47,6 +47,7 @@ h1 {
 h2 {
     font-size: 1.8em; /* Taille pour les écrans normaux */
     margin: 0; /* Supprime la marge par défaut */
+    line-height: 1.0; /* Ajuste l'interligne */
 }
 
 /* Baseline */
