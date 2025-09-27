@@ -1,5 +1,5 @@
 /* Réinitialisation de quelques styles de base */
-body, h1, p, ul {
+body, h1, h2, p, ul {
     margin: 0;
     padding: 0;
 }
@@ -42,12 +42,14 @@ body {
 h1 {
     font-size: 2.5em; /* Taille pour les écrans normaux */
     margin: 0; /* Supprime la marge par défaut */
+    color: #2c3e50; /* Couleur plus sombre pour le titre principal */
 }
 
 h2 {
     font-size: 1.8em; /* Taille pour les écrans normaux */
     margin: 0; /* Supprime la marge par défaut */
-    line-height: 1.0; /* Ajuste l'interligne */
+    line-height: 1.2; /* Ajuste l'interligne pour plus de lisibilité */
+    color: #34495e; /* Couleur légèrement plus claire pour le sous-titre */
 }
 
 /* Baseline */
@@ -69,13 +71,14 @@ ul li {
     background: #fff;
     margin: 10px 0;
     padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: background 0.3s;
+    border-radius: 8px; /* Coins plus arrondis */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Ombre plus prononcée */
+    transition: background 0.3s, transform 0.2s; /* Ajout d'une transition pour l'effet de survol */
 }
 
 ul li:hover {
     background: #e9e9e9;
+    transform: translateY(-2px); /* Légère élévation au survol */
 }
 
 /* Styles des liens */
@@ -87,6 +90,7 @@ ul li a {
 
 ul li a:hover {
     text-decoration: underline;
+    color: #0056b3; /* Couleur plus foncée au survol */
 }
 
 /* Styles pour les écrans mobiles */
@@ -104,6 +108,6 @@ ul li a:hover {
     }
 
     ul li {
-        padding: 10px;
+        padding: 10px; /* Réduction du padding pour les écrans plus petits */
     }
 }
