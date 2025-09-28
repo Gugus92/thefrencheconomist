@@ -100,7 +100,7 @@
 
                 // Générer le HTML
                 articlesGrid.innerHTML = filteredArticles.map((article, index) => `
-                    <a href="./${article.slug}.html" class="article-card" style="animation-delay: ${index * 0.1}s">
+                    <a href="./${article.slug}" class="article-card" style="animation-delay: ${index * 0.1}s">
                         <div class="article-header">
                             <div class="article-date">${article.date}</div>
                             <span class="article-category" data-category="${article.category}" onclick="filterByCategory(event, '${article.category}')">${getCategoryLabel(article.category)}</span>
