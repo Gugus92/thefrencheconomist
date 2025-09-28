@@ -22,16 +22,13 @@ body {
 .header {
     display: flex;
     align-items: flex-start;
-    justify-content: center;
     gap: 3rem;
     margin-bottom: 3rem;
-    animation: fadeInUp 0.8s ease-out;
 }
 
-.header-content {
+.text-content {
     display: flex;
     flex-direction: column;
-    text-align: left;
 }
 
 .logo {
@@ -260,10 +257,20 @@ body {
     }
 
     .header {
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .text-content {
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .subtitle {
+        width: 100%;
+        margin-top: 1rem;
     }
 
     .logo {
@@ -284,13 +291,6 @@ body {
         line-height: 1.2;
     }
 
-    .subtitle {
-        order: 2;
-        width: 100%;
-        line-height: 1.28;
-        text-align: center;
-        margin: 0;
-    }
 
     .category-nav {
         gap: 0.5rem;
