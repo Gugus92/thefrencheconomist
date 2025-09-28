@@ -15,20 +15,24 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
 }
 
 /* Header */
 .header {
     display: flex;
     align-items: flex-start;
+    justify-content: center;
     gap: 3rem;
     margin-bottom: 3rem;
+    animation: fadeInUp 0.8s ease-out;
 }
 
-.text-content {
+.header-content {
     display: flex;
     flex-direction: column;
+    text-align: left;
+    margin-top: 0;
 }
 
 .logo {
@@ -41,7 +45,10 @@ body {
     transform: perspective(1000px) rotateX(10deg);
     transition: transform 0.3s ease;
     flex-shrink: 0;
+    margin-top: 0;
+    align-self: flex-start;
 }
+
 
 .logo-img {
     width: 100%;
@@ -253,7 +260,7 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 0.5rem;
     }
 
     .header {
