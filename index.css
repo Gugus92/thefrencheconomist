@@ -28,6 +28,12 @@ body {
     animation: fadeInUp 0.8s ease-out;
 }
 
+.header-top {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+}
+
 .header-content {
     display: flex;
     flex-direction: column;
@@ -254,6 +260,21 @@ body {
 }
 
 /* Responsive Design */
+
+/* Sur desktop, le sous-titre reste dans le header-content */
+@media (min-width: 769px) {
+    .header-top .header-content {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .subtitle {
+        margin-top: 0.5rem;
+    }
+}
+
+
+
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
@@ -261,20 +282,11 @@ body {
 
     .header {
         flex-direction: column;
-        align-items: stretch;
         gap: 1rem;
-        margin-bottom: 2rem;
     }
-
+    
     .header-top {
-        display: flex;
-        align-items: center;
         gap: 1.5rem;
-    }
-
-    .header-content {
-        text-align: left;
-        flex: 1;
     }
 
     .logo {
@@ -290,10 +302,8 @@ body {
     }
 
     .subtitle {
-        line-height: 1.28;
-        width: 100%;
         text-align: center;
-        margin-top: 0.5rem;
+        width: 100%;
     }
 
     .category-nav {
