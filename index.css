@@ -263,13 +263,22 @@ body {
 
 /* Sur desktop, le sous-titre reste dans le header-content */
 @media (min-width: 769px) {
+    .header {
+        align-items: flex-start;
+    }
+    
     .header-top .header-content {
         display: flex;
         flex-direction: column;
     }
     
-    .subtitle {
+    .header-top .subtitle {
+        display: none; /* Cache le sous-titre de la structure mobile */
+    }
+    
+    .header-content .subtitle {
         margin-top: 0.5rem;
+        text-align: left;
     }
 }
 
