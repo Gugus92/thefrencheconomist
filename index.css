@@ -21,7 +21,7 @@ body {
 /* Header */
 .header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     gap: 3rem;
     margin-bottom: 3rem;
@@ -73,7 +73,7 @@ body {
     color: #6b7280;
     font-weight: 400;
     max-width: 600px;
-    margin: 0 auto;
+    margin-top: 0.5rem;
 }
 
 /* Navigation des catégories */
@@ -260,27 +260,36 @@ body {
     }
 
     .header {
+        flex-wrap: wrap;
+        justify-content: flex-start;
         gap: 1.5rem;
         margin-bottom: 2rem;
-    }
-
-    .header-content {
-        text-align: left;
     }
 
     .logo {
         width: 156px;
         height: 156px;
+        order: 0;
+    }
+
+    .header-content {
+        order: 1;
+        flex: 1;
+        min-width: 0;
     }
 
     .title {
         font-size: clamp(1.21rem, 2.2vw, 1.43rem);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0rem;
         line-height: 1.2;
     }
 
     .subtitle {
+        order: 2;
+        width: 100%;
         line-height: 1.28;
+        text-align: center;
+        margin: 0;
     }
 
     .category-nav {
@@ -320,7 +329,8 @@ body {
 
     .title {
         font-size: clamp(1.21rem, 2.2vw, 1.43rem);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0rem;
+        line-height: 1.2;
     }
 
     .subtitle {
