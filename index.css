@@ -314,16 +314,17 @@ body {
     }
 
     .logo {
-        width: 130px;
-        height: 130px;
+        width: 80px;
+        height: 80px;
     }
 
     .title {
-        font-size: clamp(1.21rem, 2.2vw, 1.43rem);
+        font-size: clamp(1.0rem, 2.2vw, 1.1rem);
         margin-bottom: 0.5rem;
     }
 
     .subtitle {
+        font-size: clamp(0.9rem, 2.2vw, 1.0rem);
         line-height: 1.28;
     }
 
