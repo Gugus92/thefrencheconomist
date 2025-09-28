@@ -336,12 +336,12 @@ body {
     }
 
     .logo {
-        width: 130px;
-        height: 130px;
+        width: 100px;
+        height: 100px;
     }
 
     .title {
-        font-size: clamp(1.21rem, 2.2vw, 1.43rem);
+        font-size: clamp(1.1rem, 2.2vw, 1.2rem);
         margin-bottom: 0rem;
         line-height: 1.2;
     }
