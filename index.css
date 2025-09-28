@@ -26,6 +26,7 @@ body {
     gap: 3rem;
     margin-bottom: 0,1rem;
     animation: fadeInUp 0.8s ease-out;
+    padding-left: 5rem;
 }
 
 .header-content {
@@ -333,6 +334,7 @@ body {
 @media (max-width: 480px) {
     .header {
         gap: 1rem;
+        padding-left: 0rem;
     }
 
     .logo {
