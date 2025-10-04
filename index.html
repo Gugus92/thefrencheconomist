@@ -41,6 +41,18 @@
     <script>
         // Données des articles
         const articles = [
+            { id: 9, title: "De nombreux démocrates pensent que Chuck Schumer est un problème", category: "United States", date: "03 octobre 2025", slug: "de_nombreux_démocrates_pensent_que_chuck_schumer_est_un_problème.html" },
+            { id: 1, title: "ByteDance sera mieux sans TikTok US", category: "Business", date: "02 octobre 2025", slug: "bytedance_sera_mieux_sans_tiktok_us.html" },
+            { id: 5, title: "Comment les dirigeants exercent sans le savoir leur pouvoir", category: "Business", date: "02 octobre 2025", slug: "comment_les_dirigeants_exercent_sans_le_savoir_leur_pouvoir.html" },
+            { id: 23, title: "La nouvelle saison de la Cour Suprême redessinera la constitution américaine", category: "Leaders", date: "02 octobre 2025", slug: "la_nouvelle_saison_de_la_cour_suprême_redessinera_la_constitution_américaine.html" },
+            { id: 31, title: "Le remède de Donald Trump contre les prix des médicaments aggrave le problème.", category: "Leaders", date: "02 octobre 2025", slug: "le_remède_de_donald_trump_contre_les_prix_des_médicaments_aggrave_le_problème.html" },
+            { id: 38, title: "Libérez la révolution des robotaxis", category: "Leaders", date: "02 octobre 2025", slug: "libérez_la_révolution_des_robotaxis.html" },
+            { id: 56, title: "Un licorne de l\'IA pour 2 milliards de dollars teste le sang-froid de Londres", category: "Britain", date: "02 octobre 2025", slug: "un_licorne_de_lia_pour_2_milliards_de_dollars_teste_le_sang-froid_de_londres.html" },
+            { id: 57, title: "Vladimir Poutine teste l’Occident — et son unité", category: "Leaders", date: "02 octobre 2025", slug: "vladimir_poutine_teste_loccident_et_son_unité.html" },
+            { id: 35, title: "Les nouveaux magnats des médias américains : les Ellison", category: "Business", date: "01 octobre 2025", slug: "les_nouveaux_magnats_des_médias_américains_les_ellison.html" },
+            { id: 41, title: "L’Occident peut-il survivre à une époque de tensions maximales ?", category: "International", date: "30 septembre 2025", slug: "loccident_peut-il_survivre_à_une_époque_de_tensions_maximales.html" },
+            { id: 12, title: "Donald Trump mène une guerre contre les prix exorbitants des médicaments. Peut-il gagner ?", category: "Business", date: "28 septembre 2025", slug: "donald_trump_mène_une_guerre_contre_les_prix_exorbitants_des_médicaments_peut-il_gagner.html" },
+            { id: 4, title: "Comment Israël perd les États-Unis", category: "Leaders", date: "18 septembre 2025", slug: "comment_israël_perd_les_états-unis.html" },
             { id: 2, title: "Ce que la Finlande pourrait apprendre à l\'Ukraine sur la guerre et la paix", category: "categorie", date: "jj/mm/aaaa", slug: "ce_que_la_finlande_pourrait_apprendre_à_lukraine_sur_la_guerre_et_la_paix.html" },
             { id: 3, title: "Combien de subordonnés un manager devrait-il avoir ?", category: "categorie", date: "jj/mm/aaaa", slug: "combien_de_subordonnés_un_manager_devrait-il_avoir.html" },
             { id: 6, title: "Comment les drones navals ukrainiens tiennent à distance les navires de guerre russes", category: "categorie", date: "jj/mm/aaaa", slug: "comment_les_drones_navals_ukrainiens_tiennent_à_distance_les_navires_de_guerre_russes.html" },
@@ -86,19 +98,7 @@
             { id: 53, title: "Si les règles sur les résultats trimestriels étaient supprimées, est-ce que quelqu\'un s\'en rendrait compte ?", category: "categorie", date: "jj/mm/aaaa", slug: "si_les_règles_sur_les_résultats_trimestriels_étaient_supprimées_est-ce_que_quelquun_sen_rendrait_compte.html" },
             { id: 54, title: "Sur les lignes de front ukrainiennes, la zone de danger s\'étend", category: "categorie", date: "jj/mm/aaaa", slug: "sur_les_lignes_de_front_ukrainiennes_la_zone_de_danger_sétend.html" },
             { id: 55, title: "Tony Blair, pourrait-il diriger Gaza ?", category: "categorie", date: "jj/mm/aaaa", slug: "tony_blair_pourrait-il_diriger_gaza.html" },
-            { id: 58, title: "Êtes-vous accro au shopping ?", category: "categorie", date: "jj/mm/aaaa", slug: "êtes-vous_accro_au_shopping.html" },
-            { id: 41, title: "L’Occident peut-il survivre à une époque de tensions maximales ?", category: "International", date: "30 September 2025", slug: "loccident_peut-il_survivre_à_une_époque_de_tensions_maximales.html" },
-            { id: 12, title: "Donald Trump mène une guerre contre les prix exorbitants des médicaments. Peut-il gagner ?", category: "Business", date: "28 September 2025", slug: "donald_trump_mène_une_guerre_contre_les_prix_exorbitants_des_médicaments_peut-il_gagner.html" },
-            { id: 4, title: "Comment Israël perd les États-Unis", category: "Leaders", date: "18 September 2025", slug: "comment_israël_perd_les_états-unis.html" },
-            { id: 9, title: "De nombreux démocrates pensent que Chuck Schumer est un problème", category: "United States", date: "03 October 2025", slug: "de_nombreux_démocrates_pensent_que_chuck_schumer_est_un_problème.html" },
-            { id: 1, title: "ByteDance sera mieux sans TikTok US", category: "Business", date: "02 October 2025", slug: "bytedance_sera_mieux_sans_tiktok_us.html" },
-            { id: 5, title: "Comment les dirigeants exercent sans le savoir leur pouvoir", category: "Business", date: "02 October 2025", slug: "comment_les_dirigeants_exercent_sans_le_savoir_leur_pouvoir.html" },
-            { id: 23, title: "La nouvelle saison de la Cour Suprême redessinera la constitution américaine", category: "Leaders", date: "02 October 2025", slug: "la_nouvelle_saison_de_la_cour_suprême_redessinera_la_constitution_américaine.html" },
-            { id: 31, title: "Le remède de Donald Trump contre les prix des médicaments aggrave le problème.", category: "Leaders", date: "02 October 2025", slug: "le_remède_de_donald_trump_contre_les_prix_des_médicaments_aggrave_le_problème.html" },
-            { id: 38, title: "Libérez la révolution des robotaxis", category: "Leaders", date: "02 October 2025", slug: "libérez_la_révolution_des_robotaxis.html" },
-            { id: 56, title: "Un licorne de l\'IA pour 2 milliards de dollars teste le sang-froid de Londres", category: "Britain", date: "02 October 2025", slug: "un_licorne_de_lia_pour_2_milliards_de_dollars_teste_le_sang-froid_de_londres.html" },
-            { id: 57, title: "Vladimir Poutine teste l’Occident — et son unité", category: "Leaders", date: "02 October 2025", slug: "vladimir_poutine_teste_loccident_et_son_unité.html" },
-            { id: 35, title: "Les nouveaux magnats des médias américains : les Ellison", category: "Business", date: "01 October 2025", slug: "les_nouveaux_magnats_des_médias_américains_les_ellison.html" }
+            { id: 58, title: "Êtes-vous accro au shopping ?", category: "categorie", date: "jj/mm/aaaa", slug: "êtes-vous_accro_au_shopping.html" }
         ];
 
         // Élément de la grille
