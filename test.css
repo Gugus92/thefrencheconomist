@@ -280,13 +280,14 @@ body {
     }
     
     .header-content {
-        align-items: center;
-        text-align: center;
+        align-items: left;
+        text-align: left;
     }
     
     .subtitle {
         width: 100%;
         margin-top: 0.1rem;
+        /*margin-bottom: 0.2rem;*/
         text-align: left;
         font-size: 1rem;
     }
