@@ -1,6 +1,6 @@
 // 1. Importer les modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // 2. Charger UA-Parser-JS dynamiquement
 function loadUAParser() {
@@ -263,5 +263,75 @@ async function trackVisit() {
   }
 }
 
-// 8. Lancer le tracking
-trackVisit();
+// 8. Variable globale pour stocker l'ID du document de visite
+let visitDocId = null;
+
+// 9. Lancer le tracking et stocker l'ID du document
+async function initTracking() {
+  visitDocId = await trackVisit();
+  
+  // Attacher le tracking des liens après l'enregistrement de la visite
+  if (visitDocId) {
+    attachLinkTracking();
+  }
+}
+
+initTracking();
+
+// 10. Fonction pour ajouter un clic au document de visite
+async function addClickToVisit(linkElement, event) {
+  if (!visitDocId) {
+    console.warn('⚠ Document de visite non encore créé');
+    return;
+  }
+  
+  try {
+    const clickInfo = {
+      url: linkElement.href,
+      text: linkElement.textContent.trim().substring(0, 100),
+      timestamp: new Date().toISOString(),
+      page_url: window.location.href
+    };
+    
+    // Mettre à jour le document avec arrayUnion pour ajouter au tableau
+    const visitRef = doc(db, "visites", visitDocId);
+    await updateDoc(visitRef, {
+      clicked_links: arrayUnion(clickInfo)
+    });
+    
+    console.log('✓ Clic ajouté au document de visite:', linkElement.href);
+    
+  } catch (error) {
+    console.error('✗ Erreur lors de l\'ajout du clic:', error);
+  }
+}
+
+// 11. Attacher les listeners aux liens
+function attachLinkTracking() {
+  console.log('🔗 Initialisation du tracking des liens...');
+  
+  const links = document.querySelectorAll('a[href]');
+  console.log(`ℹ ${links.length} liens détectés sur la page`);
+  
+  links.forEach(link => {
+    link.addEventListener('click', function(event) {
+      event.preventDefault(); // Empêcher la navigation immédiate
+      
+      const targetUrl = this.href;
+      
+      // Enregistrer le clic puis naviguer
+      addClickToVisit(this, event)
+        .then(() => {
+          console.log('→ Navigation vers:', targetUrl);
+          window.location.href = targetUrl;
+        })
+        .catch((error) => {
+          console.error('✗ Erreur lors du tracking, navigation quand même:', error);
+          // Naviguer même en cas d'erreur pour ne pas bloquer l'utilisateur
+          window.location.href = targetUrl;
+        });
+    });
+  });
+  
+  console.log('✓ Tracking des liens activé');
+}
