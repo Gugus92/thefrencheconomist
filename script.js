@@ -1,7 +1,17 @@
-// 1. Importer les modules Firebase et UA-Parser
+// 1. Importer les modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { UAParser } from "https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.1/dist/ua-parser.min.js";
+
+// 2. Charger UA-Parser-JS dynamiquement
+function loadUAParser() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.38/dist/ua-parser.min.js';
+    script.onload = () => resolve(window.UAParser);
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
 
 // 2. Configuration Firebase
 const firebaseConfig = {
@@ -78,6 +88,9 @@ async function getOrCreateVisitorId() {
 // 7. Fonction principale pour collecter et enregistrer les données
 async function trackVisit() {
   try {
+    // Charger UA-Parser-JS
+    const UAParser = await loadUAParser();
+    
     // Obtenir l'ID visiteur
     const visitorId = await getOrCreateVisitorId();
     
