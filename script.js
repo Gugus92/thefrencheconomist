@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Version du script
-const SCRIPT_VERSION = "1.0.3";
+const SCRIPT_VERSION = "1.0.31";
 console.log(`📊 Tracking Script v${SCRIPT_VERSION}`);
 
 // 2. Charger UA-Parser-JS dynamiquement
@@ -272,11 +272,17 @@ let visitDocId = null;
 
 // 9. Lancer le tracking et stocker l'ID du document
 async function initTracking() {
+  console.log('🎬 Initialisation du tracking...');
   visitDocId = await trackVisit();
+  
+  console.log('📋 visitDocId après trackVisit:', visitDocId);
   
   // Attacher le tracking des liens après l'enregistrement de la visite
   if (visitDocId) {
+    console.log('✓ Document de visite créé, activation du tracking des liens');
     attachLinkTracking();
+  } else {
+    console.error('✗ Pas de visitDocId, tracking des liens désactivé');
   }
 }
 
@@ -313,12 +319,21 @@ async function addClickToVisit(linkElement, event) {
 // 11. Attacher les listeners aux liens
 function attachLinkTracking() {
   console.log('🔗 Initialisation du tracking des liens...');
+  console.log('📍 État du DOM:', document.readyState);
   
   const links = document.querySelectorAll('a[href]');
   console.log(`ℹ ${links.length} liens détectés sur la page`);
   
-  links.forEach(link => {
+  if (links.length === 0) {
+    console.warn('⚠ Aucun lien trouvé ! Le DOM est peut-être pas encore chargé.');
+    console.log('📝 Contenu du body:', document.body?.innerHTML?.substring(0, 200));
+  }
+  
+  links.forEach((link, index) => {
+    console.log(`  Lien ${index + 1}: ${link.href} - "${link.textContent.trim().substring(0, 30)}"`);
+    
     link.addEventListener('click', function(event) {
+      console.log('🖱️ CLIC DÉTECTÉ sur:', this.href);
       event.preventDefault(); // Empêcher la navigation immédiate
       
       const targetUrl = this.href;
