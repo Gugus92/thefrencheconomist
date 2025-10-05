@@ -437,6 +437,7 @@ async function initTracking() {
   if (visitDocId) {
     console.log('✓ Document de visite créé, activation du tracking des liens');
     attachLinkTracking();
+    observeDOMChanges(); // Activer l'observateur pour les liens dynamiques
   } else {
     console.error('✗ Pas de visitDocId, tracking des liens désactivé');
   }
@@ -493,9 +494,23 @@ function attachLinkTracking() {
   }
   
   links.forEach((link, index) => {
+    // Ignorer les liens déjà trackés
+    if (link.dataset.tracked === 'true') {
+      return;
+    }
+    
+    // Marquer comme tracké
+    link.dataset.tracked = 'true';
+    
     console.log(`  Lien ${index + 1}: ${link.href} - "${link.textContent.trim().substring(0, 30)}"`);
     
     link.addEventListener('click', function(event) {
+      // Ignorer les liens avec href vide ou javascript:
+      if (!this.href || this.href.startsWith('javascript:') || this.href.includes('#')) {
+        console.log('🔗 Lien ignoré (ancre ou javascript):', this.href);
+        return;
+      }
+      
       console.log('🖱️ CLIC DÉTECTÉ sur:', this.href);
       event.preventDefault();
       
@@ -514,6 +529,45 @@ function attachLinkTracking() {
   });
   
   console.log('✓ Tracking des liens activé');
+}
+
+// 13b. Observer les changements du DOM pour tracker les nouveaux liens
+function observeDOMChanges() {
+  console.log('👁️ Activation de l\'observateur DOM pour les liens dynamiques...');
+  
+  const observer = new MutationObserver((mutations) => {
+    let hasNewLinks = false;
+    
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        // Vérifier si le nœud ajouté contient des liens
+        if (node.nodeType === 1) { // ELEMENT_NODE
+          if (node.tagName === 'A' && node.href) {
+            hasNewLinks = true;
+          } else if (node.querySelectorAll) {
+            const links = node.querySelectorAll('a[href]');
+            if (links.length > 0) {
+              hasNewLinks = true;
+            }
+          }
+        }
+      });
+    });
+    
+    // Si de nouveaux liens ont été ajoutés, les tracker
+    if (hasNewLinks) {
+      console.log('🔄 Nouveaux liens détectés, réattachement du tracking...');
+      attachLinkTracking();
+    }
+  });
+  
+  // Observer tout le body pour les changements
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+  
+  console.log('✓ Observateur DOM activé');
 }
 
 // 14. Démarrer le tracking
