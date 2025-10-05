@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Version du script
-const SCRIPT_VERSION = "1.0.33";
+const SCRIPT_VERSION = "1.0.34";
 console.log(`📊 Tracking Script v${SCRIPT_VERSION}`);
 
 // 2. Charger UA-Parser-JS dynamiquement
@@ -450,11 +450,21 @@ async function addClickToVisit(linkElement, event) {
   }
   
   try {
+    // Créer le timestamp au timezone de Paris
+    const parisTime = new Date().toLocaleString('fr-FR', {
+      timeZone: 'Europe/Paris',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    
     const clickInfo = {
       url: linkElement.href,
-      text: linkElement.textContent.trim().substring(0, 100),
-      timestamp: new Date().toISOString(),
-      page_url: window.location.href
+      timestamp: parisTime
     };
     
     const visitRef = doc(db, "visites", visitDocId);
