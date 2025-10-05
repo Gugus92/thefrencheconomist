@@ -84,6 +84,43 @@ async function trackVisit() {
     const response = await fetch('https://ipapi.co/json/');
     const data = await response.json();
     
+    // Collecter les informations de l'équipement
+    const deviceInfo = {
+      // Informations réseau
+      network_type: navigator.connection?.effectiveType || 'unknown',
+      network_downlink: navigator.connection?.downlink || null,
+      network_rtt: navigator.connection?.rtt || null,
+      network_saveData: navigator.connection?.saveData || false,
+      
+      // Support tactile
+      touch_support: navigator.maxTouchPoints > 0,
+      max_touch_points: navigator.maxTouchPoints || 0,
+      
+      // Écran
+      screen_width: screen.width,
+      screen_height: screen.height,
+      screen_available_width: screen.availWidth,
+      screen_available_height: screen.availHeight,
+      screen_color_depth: screen.colorDepth,
+      screen_pixel_depth: screen.pixelDepth,
+      screen_orientation: screen.orientation?.type || 'unknown',
+      pixel_ratio: window.devicePixelRatio || 1,
+      
+      // Plateforme
+      platform: navigator.platform,
+      os_cpu: navigator.oscpu || 'unknown',
+      
+      // Informations supplémentaires du navigateur
+      language: navigator.language,
+      languages: navigator.languages || [],
+      hardware_concurrency: navigator.hardwareConcurrency || null,
+      device_memory: navigator.deviceMemory || null,
+      
+      // Viewport (taille visible)
+      viewport_width: window.innerWidth,
+      viewport_height: window.innerHeight
+    };
+
     const ipData = {
       visitor_id: visitorId,
       ip: data.ip,
@@ -99,6 +136,7 @@ async function trackVisit() {
       asn: data.asn,
       version: data.version,
       user_agent: navigator.userAgent,
+      ...deviceInfo,
       timestamp: serverTimestamp()
     };
     
