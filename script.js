@@ -5,11 +5,27 @@ import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limi
 // 2. Charger UA-Parser-JS dynamiquement
 function loadUAParser() {
   return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.38/dist/ua-parser.min.js';
-    script.onload = () => resolve(window.UAParser);
-    script.onerror = reject;
-    document.head.appendChild(script);
+    try {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.38/dist/ua-parser.min.js';
+      script.onload = () => {
+        if (window.UAParser) {
+          console.log('✓ UA-Parser chargé avec succès');
+          resolve(window.UAParser);
+        } else {
+          console.error('✗ UA-Parser chargé mais non disponible');
+          reject(new Error('UAParser non disponible après chargement'));
+        }
+      };
+      script.onerror = (error) => {
+        console.error('✗ Erreur de chargement UA-Parser:', error);
+        reject(new Error('Échec du chargement de UA-Parser'));
+      };
+      document.head.appendChild(script);
+    } catch (error) {
+      console.error('✗ Exception lors du chargement UA-Parser:', error);
+      reject(error);
+    }
   });
 }
 
@@ -30,22 +46,49 @@ const db = getFirestore(app);
 
 // 4. Fonctions de gestion des cookies
 function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null;
+  try {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      const cookieValue = parts.pop().split(';').shift();
+      console.log(`✓ Cookie "${name}" trouvé:`, cookieValue);
+      return cookieValue;
+    }
+    console.log(`ℹ Cookie "${name}" non trouvé`);
+    return null;
+  } catch (error) {
+    console.error(`✗ Erreur lecture cookie "${name}":`, error);
+    return null;
+  }
 }
 
 function setCookie(name, value, days = 365) {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+  try {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = `expires=${date.toUTCString()}`;
+    const secure = window.location.protocol === 'https:' ? ';Secure' : '';
+    document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax${secure}`;
+    
+    // Vérifier que le cookie a bien été créé
+    const verification = getCookie(name);
+    if (verification === value.toString()) {
+      console.log(`✓ Cookie "${name}" créé avec succès`);
+      return true;
+    } else {
+      console.warn(`⚠ Cookie "${name}" créé mais vérification échouée`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`✗ Erreur création cookie "${name}":`, error);
+    return false;
+  }
 }
 
 // 5. Récupérer le dernier ID depuis Firestore
 async function getLastVisitorId() {
   try {
+    console.log('ℹ Recherche du dernier visitor_id dans Firestore...');
     const q = query(
       collection(db, "visites"),
       orderBy("visitor_id", "desc"),
@@ -55,11 +98,22 @@ async function getLastVisitorId() {
     
     if (!querySnapshot.empty) {
       const lastDoc = querySnapshot.docs[0];
-      return lastDoc.data().visitor_id || 0;
+      const lastId = lastDoc.data().visitor_id || 0;
+      console.log(`✓ Dernier visitor_id trouvé: ${lastId}`);
+      return lastId;
     }
+    console.log('ℹ Aucun visitor_id trouvé, démarrage à 0');
     return 0;
   } catch (error) {
-    console.error("Erreur lors de la récupération du dernier ID :", error);
+    console.error("✗ Erreur lors de la récupération du dernier ID:", error);
+    console.error("  Type d'erreur:", error.name);
+    console.error("  Message:", error.message);
+    if (error.code) console.error("  Code Firebase:", error.code);
+    
+    // Si erreur d'index, afficher un message explicatif
+    if (error.message.includes('index')) {
+      console.warn('⚠ Index Firestore manquant. Créez un index sur "visitor_id" (desc)');
+    }
     return 0;
   }
 }
@@ -67,22 +121,35 @@ async function getLastVisitorId() {
 // 6. Obtenir ou créer l'identifiant visiteur
 async function getOrCreateVisitorId() {
   const cookieName = "visitor_id";
-  let visitorId = getCookie(cookieName);
   
-  if (visitorId) {
-    console.log("Cookie existant trouvé :", visitorId);
-    return parseInt(visitorId);
+  try {
+    let visitorId = getCookie(cookieName);
+    
+    if (visitorId) {
+      console.log(`✓ Visiteur connu, ID: ${visitorId}`);
+      return parseInt(visitorId);
+    }
+    
+    // Cookie non trouvé, créer un nouvel ID
+    console.log('ℹ Nouveau visiteur détecté');
+    const lastId = await getLastVisitorId();
+    const newId = lastId + 1;
+    
+    const cookieCreated = setCookie(cookieName, newId);
+    if (!cookieCreated) {
+      console.warn('⚠ Cookie non créé - possible blocage antitracking');
+      console.warn('⚠ Utilisation d\'un ID temporaire pour cette session');
+    }
+    
+    console.log(`✓ Nouveau visitor_id assigné: ${newId}`);
+    return newId;
+  } catch (error) {
+    console.error('✗ Erreur dans getOrCreateVisitorId:', error);
+    // Générer un ID temporaire en cas d'erreur
+    const tempId = Date.now();
+    console.warn(`⚠ Utilisation d'un ID temporaire basé sur timestamp: ${tempId}`);
+    return tempId;
   }
-  
-  // Cookie non trouvé, créer un nouvel ID
-  console.log("Cookie non trouvé, création d'un nouvel ID...");
-  const lastId = await getLastVisitorId();
-  const newId = lastId + 1;
-  
-  setCookie(cookieName, newId);
-  console.log("Nouveau cookie créé avec l'ID :", newId);
-  
-  return newId;
 }
 
 // 7. Fonction principale pour collecter et enregistrer les données
@@ -126,19 +193,19 @@ async function trackVisit() {
       cpu_architecture: uaResult.cpu.architecture || 'unknown'
     };
 
-    // Collecter les informations de l'équipement
+    // Collecter les informations de l'équipement (avec gestion antitracking)
     const deviceInfo = {
-      // Informations réseau
-      network_type: navigator.connection?.effectiveType || 'unknown',
+      // Informations réseau (peut être bloqué par antitracking)
+      network_type: navigator.connection?.effectiveType || 'blocked',
       network_downlink: navigator.connection?.downlink || null,
       network_rtt: navigator.connection?.rtt || null,
       network_saveData: navigator.connection?.saveData || false,
       
-      // Support tactile
+      // Support tactile (généralement accessible)
       touch_support: navigator.maxTouchPoints > 0,
       max_touch_points: navigator.maxTouchPoints || 0,
       
-      // Écran
+      // Écran (peut être arrondi par antitracking)
       screen_width: screen.width,
       screen_height: screen.height,
       screen_available_width: screen.availWidth,
@@ -148,19 +215,23 @@ async function trackVisit() {
       screen_orientation: screen.orientation?.type || 'unknown',
       pixel_ratio: window.devicePixelRatio || 1,
       
-      // Plateforme
-      platform: navigator.platform,
+      // Plateforme (peut être généralisé)
+      platform: navigator.platform || 'unknown',
       os_cpu: navigator.oscpu || 'unknown',
       
       // Informations supplémentaires du navigateur
-      language: navigator.language,
+      language: navigator.language || 'unknown',
       languages: navigator.languages || [],
       hardware_concurrency: navigator.hardwareConcurrency || null,
       device_memory: navigator.deviceMemory || null,
       
       // Viewport (taille visible)
       viewport_width: window.innerWidth,
-      viewport_height: window.innerHeight
+      viewport_height: window.innerHeight,
+      
+      // Indicateurs de protection de la vie privée
+      doNotTrack: navigator.doNotTrack || 'unknown',
+      globalPrivacyControl: navigator.globalPrivacyControl || false
     };
 
     const ipData = {
