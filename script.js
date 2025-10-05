@@ -1,6 +1,7 @@
-// 1. Importer les modules Firebase
+// 1. Importer les modules Firebase et UA-Parser
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import UAParser from "https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.38/dist/ua-parser.min.js";
 
 // 2. Configuration Firebase
 const firebaseConfig = {
@@ -84,6 +85,34 @@ async function trackVisit() {
     const response = await fetch('https://ipapi.co/json/');
     const data = await response.json();
     
+    // Parser le User Agent avec UA-Parser-JS
+    const parser = new UAParser();
+    const uaResult = parser.getResult();
+    
+    // Données extraites du User Agent
+    const parsedUA = {
+      // Navigateur
+      browser_name: uaResult.browser.name || 'unknown',
+      browser_version: uaResult.browser.version || 'unknown',
+      browser_major: uaResult.browser.major || 'unknown',
+      
+      // Moteur de rendu
+      engine_name: uaResult.engine.name || 'unknown',
+      engine_version: uaResult.engine.version || 'unknown',
+      
+      // Système d'exploitation
+      os_name: uaResult.os.name || 'unknown',
+      os_version: uaResult.os.version || 'unknown',
+      
+      // Appareil
+      device_vendor: uaResult.device.vendor || 'unknown',
+      device_model: uaResult.device.model || 'unknown',
+      device_type: uaResult.device.type || 'desktop', // mobile, tablet, desktop, etc.
+      
+      // CPU
+      cpu_architecture: uaResult.cpu.architecture || 'unknown'
+    };
+
     // Collecter les informations de l'équipement
     const deviceInfo = {
       // Informations réseau
@@ -136,6 +165,7 @@ async function trackVisit() {
       asn: data.asn,
       version: data.version,
       user_agent: navigator.userAgent,
+      ...parsedUA,
       ...deviceInfo,
       timestamp: serverTimestamp()
     };
