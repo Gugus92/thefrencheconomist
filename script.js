@@ -3,8 +3,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Version du script
-const SCRIPT_VERSION = "1.0.34";
-console.log(`📊 Tracking Script v${SCRIPT_VERSION}`);
+const SCRIPT_VERSION = "2.0";
+console.log(`📊  Script v${SCRIPT_VERSION}`);
 
 // 2. Charger UA-Parser-JS dynamiquement
 function loadUAParser() {
@@ -502,7 +502,7 @@ function attachLinkTracking() {
     // Marquer comme tracké
     link.dataset.tracked = 'true';
     
-    console.log(`  Lien ${index + 1}: ${link.href} - "${link.textContent.trim().substring(0, 30)}"`);
+    // console.log(`  Lien ${index + 1}: ${link.href} - "${link.textContent.trim().substring(0, 30)}"`);
     
     link.addEventListener('click', function(event) {
       // Ignorer les liens avec href vide ou javascript:
