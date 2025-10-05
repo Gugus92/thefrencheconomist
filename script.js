@@ -1,4 +1,4 @@
- <// 1. Importer les modules Firebase
+ // 1. Importer les modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
