@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Version du script
-const SCRIPT_VERSION = "1.0.2";
+const SCRIPT_VERSION = "1.0.3";
 console.log(`📊 Tracking Script v${SCRIPT_VERSION}`);
 
 // 2. Charger UA-Parser-JS dynamiquement
