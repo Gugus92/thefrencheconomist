@@ -7,7 +7,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
 
   // 2. Configuration
   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {{
+  const firebaseConfig = {
     apiKey: "AIzaSyCnC8D-XeMyW2ni_w7fM9mCXgJWoKm-b6k",
     authDomain: "the-french-economist.firebaseapp.com",
     projectId: "the-french-economist",
@@ -15,7 +15,7 @@ import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.g
     messagingSenderId: "1034383989383",
     appId: "1:1034383989383:web:3ba54f185b3c355ee53622",
     measurementId: "G-M5JLD8QEP4"
-  }};
+  };
 
   // 3. Initialiser Firebase et Firestore
   const app = initializeApp(firebaseConfig);
