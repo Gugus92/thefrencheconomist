@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebas
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 // Version du script
-const SCRIPT_VERSION = "1.0.32";
+const SCRIPT_VERSION = "1.0.33";
 console.log(`📊 Tracking Script v${SCRIPT_VERSION}`);
 
 // 2. Charger UA-Parser-JS dynamiquement
@@ -33,7 +33,7 @@ function loadUAParser() {
   });
 }
 
-// 2. Configuration Firebase
+// 3. Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCnC8D-XeMyW2ni_w7fM9mCXgJWoKm-b6k",
   authDomain: "the-french-economist.firebaseapp.com",
@@ -44,11 +44,11 @@ const firebaseConfig = {
   measurementId: "G-M5JLD8QEP4"
 };
 
-// 3. Initialiser Firebase et Firestore
+// 4. Initialiser Firebase et Firestore
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 4. Fonctions de gestion des cookies
+// 5. Fonctions de gestion des cookies
 function getCookie(name) {
   try {
     const value = `; ${document.cookie}`;
@@ -74,7 +74,6 @@ function setCookie(name, value, days = 365) {
     const secure = window.location.protocol === 'https:' ? ';Secure' : '';
     document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax${secure}`;
     
-    // Vérifier que le cookie a bien été créé
     const verification = getCookie(name);
     if (verification === value.toString()) {
       console.log(`✓ Cookie "${name}" créé avec succès`);
@@ -89,7 +88,7 @@ function setCookie(name, value, days = 365) {
   }
 }
 
-// 5. Récupérer le dernier ID depuis Firestore
+// 6. Récupérer le dernier ID depuis Firestore
 async function getLastVisitorId() {
   try {
     console.log('ℹ Recherche du dernier visitor_id dans Firestore...');
@@ -114,7 +113,6 @@ async function getLastVisitorId() {
     console.error("  Message:", error.message);
     if (error.code) console.error("  Code Firebase:", error.code);
     
-    // Si erreur d'index, afficher un message explicatif
     if (error.message.includes('index')) {
       console.warn('⚠ Index Firestore manquant. Créez un index sur "visitor_id" (desc)');
     }
@@ -122,7 +120,7 @@ async function getLastVisitorId() {
   }
 }
 
-// 6. Obtenir ou créer l'identifiant visiteur
+// 7. Obtenir ou créer l'identifiant visiteur
 async function getOrCreateVisitorId() {
   const cookieName = "visitor_id";
   
@@ -134,7 +132,6 @@ async function getOrCreateVisitorId() {
       return parseInt(visitorId);
     }
     
-    // Cookie non trouvé, créer un nouvel ID
     console.log('ℹ Nouveau visiteur détecté');
     const lastId = await getLastVisitorId();
     const newId = lastId + 1;
@@ -149,135 +146,294 @@ async function getOrCreateVisitorId() {
     return newId;
   } catch (error) {
     console.error('✗ Erreur dans getOrCreateVisitorId:', error);
-    // Générer un ID temporaire en cas d'erreur
     const tempId = Date.now();
     console.warn(`⚠ Utilisation d'un ID temporaire basé sur timestamp: ${tempId}`);
     return tempId;
   }
 }
 
-// 7. Fonction principale pour collecter et enregistrer les données
-async function trackVisit() {
+// 8. Fonction pour collecter les données IP
+async function collectIPData() {
+  console.log('🌍 Récupération des données de géolocalisation IP...');
+  
+  let data = {};
   try {
-    // Charger UA-Parser-JS
-    const UAParser = await loadUAParser();
+    console.log('📡 Tentative avec ipwho.is...');
+    const response = await fetch('https://ipwho.is/');
     
-    // Obtenir l'ID visiteur
-    const visitorId = await getOrCreateVisitorId();
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP ipwho.is: ${response.status}`);
+    }
     
-    // Collecter les données IP
-    const response = await fetch('https://ipapi.co/json/');
-    const data = await response.json();
+    const geoData = await response.json();
     
-    // Parser le User Agent avec UA-Parser-JS
-    const parser = new UAParser();
-    const uaResult = parser.getResult();
+    if (!geoData.success) {
+      throw new Error(`ipwho.is a retourné success=false: ${geoData.message || 'unknown'}`);
+    }
     
-    // Données extraites du User Agent
-    const parsedUA = {
-      // Navigateur
-      browser_name: uaResult.browser.name || 'unknown',
-      browser_version: uaResult.browser.version || 'unknown',
-      browser_major: uaResult.browser.major || 'unknown',
-      
-      // Moteur de rendu
-      engine_name: uaResult.engine.name || 'unknown',
-      engine_version: uaResult.engine.version || 'unknown',
-      
-      // Système d'exploitation
-      os_name: uaResult.os.name || 'unknown',
-      os_version: uaResult.os.version || 'unknown',
-      
-      // Appareil
-      device_vendor: uaResult.device.vendor || 'unknown',
-      device_model: uaResult.device.model || 'unknown',
-      device_type: uaResult.device.type || 'desktop', // mobile, tablet, desktop, etc.
-      
-      // CPU
-      cpu_architecture: uaResult.cpu.architecture || 'unknown'
+    data = {
+      ip: geoData.ip,
+      city: geoData.city,
+      region: geoData.region,
+      country_name: geoData.country,
+      country: geoData.country_code,
+      postal: geoData.postal || null,
+      latitude: geoData.latitude,
+      longitude: geoData.longitude,
+      timezone: geoData.timezone?.id || 'unknown',
+      org: geoData.connection?.org || 'unknown',
+      asn: geoData.connection?.asn ? String(geoData.connection.asn) : 'unknown',
+      version: geoData.type || 'IPv4'
     };
-
-    // Collecter les informations de l'équipement (avec gestion antitracking)
-    const deviceInfo = {
-      // Informations réseau (peut être bloqué par antitracking)
-      network_type: navigator.connection?.effectiveType || 'blocked',
-      network_downlink: navigator.connection?.downlink || null,
-      network_rtt: navigator.connection?.rtt || null,
-      network_saveData: navigator.connection?.saveData || false,
-      
-      // Support tactile (généralement accessible)
-      touch_support: navigator.maxTouchPoints > 0,
-      max_touch_points: navigator.maxTouchPoints || 0,
-      
-      // Écran (peut être arrondi par antitracking)
-      screen_width: screen.width,
-      screen_height: screen.height,
-      screen_available_width: screen.availWidth,
-      screen_available_height: screen.availHeight,
-      screen_color_depth: screen.colorDepth,
-      screen_pixel_depth: screen.pixelDepth,
-      screen_orientation: screen.orientation?.type || 'unknown',
-      pixel_ratio: window.devicePixelRatio || 1,
-      
-      // Plateforme (peut être généralisé)
-      platform: navigator.platform || 'unknown',
-      os_cpu: navigator.oscpu || 'unknown',
-      
-      // Informations supplémentaires du navigateur
-      language: navigator.language || 'unknown',
-      languages: navigator.languages || [],
-      hardware_concurrency: navigator.hardwareConcurrency || null,
-      device_memory: navigator.deviceMemory || null,
-      
-      // Viewport (taille visible)
-      viewport_width: window.innerWidth,
-      viewport_height: window.innerHeight,
-      
-      // Indicateurs de protection de la vie privée
-      doNotTrack: navigator.doNotTrack || 'unknown',
-      globalPrivacyControl: navigator.globalPrivacyControl || false
-    };
-
-    const ipData = {
-      visitor_id: visitorId,
-      ip: data.ip,
-      city: data.city,
-      region: data.region,
-      country: data.country_name,
-      country_code: data.country,
-      postal: data.postal,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      timezone: data.timezone,
-      org: data.org,
-      asn: data.asn,
-      version: data.version,
-      user_agent: navigator.userAgent,
-      ...parsedUA,
-      ...deviceInfo,
-      timestamp: serverTimestamp()
-    };
-    
-    // Enregistrer dans Firestore
-    await addDoc(collection(db, "visites"), ipData);
-    console.log("Données enregistrées avec succès ! Visitor ID :", visitorId);
+    console.log('✓ Données IP récupérées via ipwho.is');
     
   } catch (error) {
-    console.error("Erreur lors du tracking :", error);
+    console.error('✗ Erreur avec ipwho.is:', error.message);
+    console.warn('⚠ Tentative avec freeipapi.com...');
+    
+    try {
+      const response = await fetch('https://freeipapi.com/api/json');
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP freeipapi: ${response.status}`);
+      }
+      const apiData = await response.json();
+      
+      data = {
+        ip: apiData.ipAddress,
+        city: apiData.cityName || 'unknown',
+        region: apiData.regionName || 'unknown',
+        country_name: apiData.countryName || 'unknown',
+        country: apiData.countryCode || 'unknown',
+        postal: apiData.zipCode || null,
+        latitude: apiData.latitude || null,
+        longitude: apiData.longitude || null,
+        timezone: apiData.timeZone || 'unknown',
+        org: 'unknown',
+        asn: 'unknown',
+        version: 'IPv4'
+      };
+      console.log('✓ Données IP récupérées via freeipapi.com');
+      
+    } catch (fallbackError) {
+      console.error('✗ Erreur avec freeipapi.com:', fallbackError.message);
+      console.warn('⚠ Tentative avec ipapi.is...');
+      
+      try {
+        const response = await fetch('https://ipapi.is/');
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP ipapi.is: ${response.status}`);
+        }
+        const apiData = await response.json();
+        
+        data = {
+          ip: apiData.ip,
+          city: apiData.location?.city || 'unknown',
+          region: apiData.location?.state || 'unknown',
+          country_name: apiData.location?.country || 'unknown',
+          country: apiData.location?.country_code || 'unknown',
+          postal: apiData.location?.postal || null,
+          latitude: apiData.location?.latitude || null,
+          longitude: apiData.location?.longitude || null,
+          timezone: apiData.location?.timezone || 'unknown',
+          org: apiData.company?.name || 'unknown',
+          asn: apiData.asn?.asn || 'unknown',
+          version: 'IPv4'
+        };
+        console.log('✓ Données IP récupérées via ipapi.is');
+        
+      } catch (lastError) {
+        console.error('✗ Erreur avec ipapi.is:', lastError.message);
+        console.error('✗ Toutes les APIs ont échoué, utilisation de données minimales');
+        
+        data = {
+          ip: 'unknown',
+          city: 'unknown',
+          region: 'unknown',
+          country_name: 'unknown',
+          country: 'unknown',
+          postal: null,
+          latitude: null,
+          longitude: null,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          org: 'unknown',
+          asn: 'unknown',
+          version: 'unknown'
+        };
+      }
+    }
+  }
+  
+  console.log('✓ Données IP finales:', data.ip, data.city, data.country_name);
+  return data;
+}
+
+// 9. Fonction principale pour collecter et enregistrer les données
+async function trackVisit() {
+  console.log('═══════════════════════════════════════');
+  console.log('🚀 Démarrage du tracking de visite');
+  console.log('═══════════════════════════════════════');
+  
+  let UAParser = null;
+  let parsedUA = null;
+  
+  // Charger UA-Parser-JS
+  console.log('📦 Chargement de UA-Parser...');
+  try {
+    UAParser = await loadUAParser();
+  } catch (uaError) {
+    console.warn('⚠ UA-Parser non disponible, utilisation des données basiques uniquement');
+    console.warn('  Détails:', uaError.message);
+  }
+  
+  // Obtenir l'ID visiteur
+  console.log('🔑 Récupération de l\'identifiant visiteur...');
+  const visitorId = await getOrCreateVisitorId();
+  
+  // Parser le User Agent si disponible
+  if (UAParser) {
+    console.log('🔍 Parsing du User Agent...');
+    try {
+      const parser = new UAParser();
+      const uaResult = parser.getResult();
+      
+      parsedUA = {
+        browser_name: uaResult.browser.name || 'unknown',
+        browser_version: uaResult.browser.version || 'unknown',
+        browser_major: uaResult.browser.major || 'unknown',
+        engine_name: uaResult.engine.name || 'unknown',
+        engine_version: uaResult.engine.version || 'unknown',
+        os_name: uaResult.os.name || 'unknown',
+        os_version: uaResult.os.version || 'unknown',
+        device_vendor: uaResult.device.vendor || 'unknown',
+        device_model: uaResult.device.model || 'unknown',
+        device_type: uaResult.device.type || 'desktop',
+        cpu_architecture: uaResult.cpu.architecture || 'unknown'
+      };
+      console.log('✓ User Agent parsé:', parsedUA.browser_name, parsedUA.os_name);
+    } catch (parseError) {
+      console.error('✗ Erreur lors du parsing UA:', parseError);
+      parsedUA = null;
+    }
+  }
+
+  // Collecter les informations de l'équipement
+  console.log('📊 Collection des informations de l\'équipement...');
+  const deviceInfo = {};
+  
+  try {
+    deviceInfo.network_type = navigator.connection?.effectiveType || 'blocked';
+    deviceInfo.network_downlink = navigator.connection?.downlink || null;
+    deviceInfo.network_rtt = navigator.connection?.rtt || null;
+    deviceInfo.network_saveData = navigator.connection?.saveData || false;
+  } catch (e) {
+    console.warn('⚠ Informations réseau bloquées');
+    deviceInfo.network_type = 'error';
+  }
+  
+  try {
+    deviceInfo.touch_support = navigator.maxTouchPoints > 0;
+    deviceInfo.max_touch_points = navigator.maxTouchPoints || 0;
+  } catch (e) {
+    console.warn('⚠ Informations tactiles bloquées');
+    deviceInfo.touch_support = null;
+  }
+  
+  try {
+    deviceInfo.screen_width = screen.width;
+    deviceInfo.screen_height = screen.height;
+    deviceInfo.screen_available_width = screen.availWidth;
+    deviceInfo.screen_available_height = screen.availHeight;
+    deviceInfo.screen_color_depth = screen.colorDepth;
+    deviceInfo.screen_pixel_depth = screen.pixelDepth;
+    deviceInfo.screen_orientation = screen.orientation?.type || 'unknown';
+    deviceInfo.pixel_ratio = window.devicePixelRatio || 1;
+  } catch (e) {
+    console.warn('⚠ Informations écran bloquées');
+    deviceInfo.screen_width = null;
+  }
+  
+  try {
+    deviceInfo.platform = navigator.platform || 'unknown';
+    deviceInfo.os_cpu = navigator.oscpu || 'unknown';
+    deviceInfo.language = navigator.language || 'unknown';
+    deviceInfo.languages = navigator.languages || [];
+    deviceInfo.hardware_concurrency = navigator.hardwareConcurrency || null;
+    deviceInfo.device_memory = navigator.deviceMemory || null;
+  } catch (e) {
+    console.warn('⚠ Informations navigateur bloquées');
+  }
+  
+  try {
+    deviceInfo.viewport_width = window.innerWidth;
+    deviceInfo.viewport_height = window.innerHeight;
+    deviceInfo.doNotTrack = navigator.doNotTrack || 'unknown';
+    deviceInfo.globalPrivacyControl = navigator.globalPrivacyControl || false;
+  } catch (e) {
+    console.warn('⚠ Informations viewport bloquées');
+  }
+  
+  console.log('✓ Informations équipement collectées');
+
+  // Collecter les données IP
+  const ipData = await collectIPData();
+  
+  // Créer l'objet de données complet
+  const visitData = {
+    visitor_id: visitorId,
+    script_version: SCRIPT_VERSION,
+    ip: ipData.ip,
+    city: ipData.city,
+    region: ipData.region,
+    country: ipData.country_name,
+    country_code: ipData.country,
+    postal: ipData.postal,
+    latitude: ipData.latitude,
+    longitude: ipData.longitude,
+    timezone: ipData.timezone,
+    org: ipData.org,
+    asn: ipData.asn,
+    version: ipData.version,
+    user_agent: navigator.userAgent,
+    ...(parsedUA || {}),
+    ...deviceInfo,
+    clicked_links: [],
+    timestamp: serverTimestamp()
+  };
+  
+  // Enregistrer dans Firestore
+  try {
+    console.log('💾 Enregistrement dans Firestore...');
+    const docRef = await addDoc(collection(db, "visites"), visitData);
+    console.log('✓ Données enregistrées avec succès !');
+    console.log('  Document ID:', docRef.id);
+    console.log('  Visitor ID:', visitorId);
+    console.log('═══════════════════════════════════════');
+    
+    return docRef.id;
+    
+  } catch (error) {
+    console.error('═══════════════════════════════════════');
+    console.error('❌ ERREUR CRITIQUE lors de l\'enregistrement Firestore');
+    console.error('═══════════════════════════════════════');
+    console.error('Type:', error.name);
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    if (error.code) console.error('Code Firebase:', error.code);
+    console.error('═══════════════════════════════════════');
+    return null;
   }
 }
 
-// 8. Variable globale pour stocker l'ID du document de visite
+// 10. Variable globale pour stocker l'ID du document de visite
 let visitDocId = null;
 
-// 9. Lancer le tracking et stocker l'ID du document
+// 11. Lancer le tracking et stocker l'ID du document
 async function initTracking() {
   console.log('🎬 Initialisation du tracking...');
   visitDocId = await trackVisit();
   
   console.log('📋 visitDocId après trackVisit:', visitDocId);
   
-  // Attacher le tracking des liens après l'enregistrement de la visite
   if (visitDocId) {
     console.log('✓ Document de visite créé, activation du tracking des liens');
     attachLinkTracking();
@@ -286,9 +442,7 @@ async function initTracking() {
   }
 }
 
-initTracking();
-
-// 10. Fonction pour ajouter un clic au document de visite
+// 12. Fonction pour ajouter un clic au document de visite
 async function addClickToVisit(linkElement, event) {
   if (!visitDocId) {
     console.warn('⚠ Document de visite non encore créé');
@@ -303,7 +457,6 @@ async function addClickToVisit(linkElement, event) {
       page_url: window.location.href
     };
     
-    // Mettre à jour le document avec arrayUnion pour ajouter au tableau
     const visitRef = doc(db, "visites", visitDocId);
     await updateDoc(visitRef, {
       clicked_links: arrayUnion(clickInfo)
@@ -316,7 +469,7 @@ async function addClickToVisit(linkElement, event) {
   }
 }
 
-// 11. Attacher les listeners aux liens
+// 13. Attacher les listeners aux liens
 function attachLinkTracking() {
   console.log('🔗 Initialisation du tracking des liens...');
   console.log('📍 État du DOM:', document.readyState);
@@ -334,11 +487,10 @@ function attachLinkTracking() {
     
     link.addEventListener('click', function(event) {
       console.log('🖱️ CLIC DÉTECTÉ sur:', this.href);
-      event.preventDefault(); // Empêcher la navigation immédiate
+      event.preventDefault();
       
       const targetUrl = this.href;
       
-      // Enregistrer le clic puis naviguer
       addClickToVisit(this, event)
         .then(() => {
           console.log('→ Navigation vers:', targetUrl);
@@ -346,7 +498,6 @@ function attachLinkTracking() {
         })
         .catch((error) => {
           console.error('✗ Erreur lors du tracking, navigation quand même:', error);
-          // Naviguer même en cas d'erreur pour ne pas bloquer l'utilisateur
           window.location.href = targetUrl;
         });
     });
@@ -354,3 +505,6 @@ function attachLinkTracking() {
   
   console.log('✓ Tracking des liens activé');
 }
+
+// 14. Démarrer le tracking
+initTracking();
