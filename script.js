@@ -1,31 +1,91 @@
- // 1. Importer les modules Firebase
+// 1. Importer les modules Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+// 2. Configuration Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCnC8D-XeMyW2ni_w7fM9mCXgJWoKm-b6k",
+  authDomain: "the-french-economist.firebaseapp.com",
+  projectId: "the-french-economist",
+  storageBucket: "the-french-economist.firebasestorage.app",
+  messagingSenderId: "1034383989383",
+  appId: "1:1034383989383:web:3ba54f185b3c355ee53622",
+  measurementId: "G-M5JLD8QEP4"
+};
 
-  // 2. Configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCnC8D-XeMyW2ni_w7fM9mCXgJWoKm-b6k",
-    authDomain: "the-french-economist.firebaseapp.com",
-    projectId: "the-french-economist",
-    storageBucket: "the-french-economist.firebasestorage.app",
-    messagingSenderId: "1034383989383",
-    appId: "1:1034383989383:web:3ba54f185b3c355ee53622",
-    measurementId: "G-M5JLD8QEP4"
-  };
+// 3. Initialiser Firebase et Firestore
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  // 3. Initialiser Firebase et Firestore
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+// 4. Fonctions de gestion des cookies
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
 
-// 4. Appeler ipapi et stocker les données
-fetch('https://ipapi.co/json/')
-  .then(response => response.json())
-  .then(async data => {
+function setCookie(name, value, days = 365) {
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/;SameSite=Lax`;
+}
+
+// 5. Récupérer le dernier ID depuis Firestore
+async function getLastVisitorId() {
+  try {
+    const q = query(
+      collection(db, "visites"),
+      orderBy("visitor_id", "desc"),
+      limit(1)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const lastDoc = querySnapshot.docs[0];
+      return lastDoc.data().visitor_id || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du dernier ID :", error);
+    return 0;
+  }
+}
+
+// 6. Obtenir ou créer l'identifiant visiteur
+async function getOrCreateVisitorId() {
+  const cookieName = "visitor_id";
+  let visitorId = getCookie(cookieName);
+  
+  if (visitorId) {
+    console.log("Cookie existant trouvé :", visitorId);
+    return parseInt(visitorId);
+  }
+  
+  // Cookie non trouvé, créer un nouvel ID
+  console.log("Cookie non trouvé, création d'un nouvel ID...");
+  const lastId = await getLastVisitorId();
+  const newId = lastId + 1;
+  
+  setCookie(cookieName, newId);
+  console.log("Nouveau cookie créé avec l'ID :", newId);
+  
+  return newId;
+}
+
+// 7. Fonction principale pour collecter et enregistrer les données
+async function trackVisit() {
+  try {
+    // Obtenir l'ID visiteur
+    const visitorId = await getOrCreateVisitorId();
+    
+    // Collecter les données IP
+    const response = await fetch('https://ipapi.co/json/');
+    const data = await response.json();
+    
     const ipData = {
+      visitor_id: visitorId,
       ip: data.ip,
       city: data.city,
       region: data.region,
@@ -41,14 +101,15 @@ fetch('https://ipapi.co/json/')
       user_agent: navigator.userAgent,
       timestamp: serverTimestamp()
     };
+    
+    // Enregistrer dans Firestore
+    await addDoc(collection(db, "visites"), ipData);
+    console.log("Données enregistrées avec succès ! Visitor ID :", visitorId);
+    
+  } catch (error) {
+    console.error("Erreur lors du tracking :", error);
+  }
+}
 
-    try {
-      await addDoc(collection(db, "visites"), ipData);
-      console.log("Données IP enregistrées avec succès !");
-    } catch (error) {
-      console.error("Erreur Firestore :", error);
-    }
-  })
-  .catch(error => {
-    console.error("Erreur ipapi :", error);
-  });
+// 8. Lancer le tracking
+trackVisit();
