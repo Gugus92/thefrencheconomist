@@ -1,7 +1,7 @@
 // 1. Importer les modules Firebase et UA-Parser
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-import { UAParser } from "https://cdn.jsdelivr.net/npm/ua-parser-js@2.0.1/dist/ua-parser.min.js";
+import UAParser from 'https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.38/src/ua-parser.js';
 
 // 2. Configuration Firebase
 const firebaseConfig = {
