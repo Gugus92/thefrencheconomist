@@ -7,7 +7,6 @@
 
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
     background : #E3120B;
     min-height: 100vh;
     padding: 20px;
@@ -15,7 +14,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
